@@ -1,0 +1,13 @@
+services:
+  postgres_db:
+    image: postgres:latest
+    environment:
+      - POSTGRES_USER=GUT
+      - POSTGRES_PASSWORD=123
+      - POSTGRES_DB=Vault
+    ports:
+    - "5432:5432"
+  adminer:
+    image: adminer
+    ports:
+    - "8080:8080"
