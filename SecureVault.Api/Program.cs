@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using SecureVault.Api.Data;
+using SecureVault.Api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,6 +13,7 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddScoped<ICryptoService, CryptoService>();
 
 var app = builder.Build();
 
