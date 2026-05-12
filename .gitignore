@@ -416,3 +416,11 @@ FodyWeavers.xsd
 *.msix
 *.msm
 *.msp
+
+# =========================
+# Custom Security Ignores
+# =========================
+
+# Ignora os arquivos de configuração que contêm chaves reais e senhas
+appsettings.json
+appsettings.Development.json
