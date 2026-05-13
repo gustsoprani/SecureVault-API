@@ -10,19 +10,19 @@ namespace SecureVault.Api.Services
     /// </summary>
     public class CryptoService : ICryptoService
     {
-        private readonly string secretValue;
+        private readonly string _secretValue;
         /// <summary>
         /// Injeta as configurações da aplicação para resgatar a chave mestra.
         /// </summary>
         /// <param name="config">Parametro que pega o texto das variáveis do sistema</param>
         public CryptoService(IConfiguration config) 
         {
-            secretValue = config["MasterKey"];
+            _secretValue = config["MasterKey"];
         }
         public string Encrypt(string toEncrypt)
         {
             // Converte a chave mestra em bytes. O AES-256 exige uma chave de exatos 32 bytes.
-            byte[] key = Encoding.UTF8.GetBytes(secretValue);
+            byte[] key = Encoding.UTF8.GetBytes(_secretValue);
 
             using (Aes aes = Aes.Create())
             {
@@ -51,7 +51,7 @@ namespace SecureVault.Api.Services
         public string Decrypt(string toDecrypt)
         {
             // Converte a chave mestra em bytes. O AES-256 exige uma chave de exatos 32 bytes.
-            byte[] key = Encoding.UTF8.GetBytes(secretValue);
+            byte[] key = Encoding.UTF8.GetBytes(_secretValue);
             // Converte o dado cifrado em bytes
             byte[] cipherBytes = Convert.FromBase64String(toDecrypt);
             using (Aes aes = Aes.Create())
