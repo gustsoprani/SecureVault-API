@@ -27,17 +27,17 @@ flowchart TD
     RL -- "Permitido" --> C_POST["POST: /api/secrets"]
     RL -- "Permitido" --> C_GET["GET: /api/secrets/{name}"]
 
-    subgraph Controller [Camada de Apresentação]
-        C_POST --> DTO[Validação de DTO]
+    subgraph Controller [Camada de Apresentacao]
+        C_POST --> DTO[Validacao de DTO]
         C_GET
     end
 
-    subgraph Service [Camada de Segurança (AES-256)]
+    subgraph Service [Camada de Seguranca AES-256]
         DTO --> ENC[Encrypt: Gera Base64]
         C_GET --> DEC[Decrypt: Restaura Texto Claro]
     end
 
-    subgraph Infrastructure [Persistência (Entity Framework)]
+    subgraph Infrastructure [Persistencia Entity Framework]
         ENC --> DB[(PostgreSQL)]
         DB -->|Busca Cifrada| DEC
     end
