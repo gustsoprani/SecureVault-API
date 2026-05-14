@@ -64,7 +64,7 @@ namespace SecureVault.Tests
             // Garante que a API respondeu Status 200 (OK)
             Assert.IsType<OkObjectResult>(result);
 
-            // Vai lá no banco de mentira e garante que a linha foi salva de verdade!
+            // Vai lá no banco de mentira e garante que a linha foi salva de verdade
             var savedSecret = await dbContext.Secrets.FirstOrDefaultAsync(s => s.Name == "Steam");
             Assert.NotNull(savedSecret);
             Assert.Equal("TextoEmBase64", savedSecret.EncryptedValue);

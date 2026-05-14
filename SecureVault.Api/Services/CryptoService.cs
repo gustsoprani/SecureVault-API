@@ -17,7 +17,8 @@ namespace SecureVault.Api.Services
         /// <param name="config">Parametro que pega o texto das variáveis do sistema</param>
         public CryptoService(IConfiguration config) 
         {
-            _secretValue = config["MasterKey"];
+            // Ele tenta pegar a "MasterKey". Se ela for nula, ele para a aplicação e avisa o erro exato.
+            _secretValue = config["MasterKey"] ?? throw new ArgumentNullException("A MasterKey não foi configurada no sistema!");
         }
         public string Encrypt(string toEncrypt)
         {

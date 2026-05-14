@@ -9,11 +9,11 @@
         /// <summary>
         /// Nome de identificação do segredo (Ex: Senha_Banco, API_KEY).
         /// </summary>
-        public string SecretName { get; set; }
+        public required string SecretName { get; set; }
 
         /// <summary>
         /// O valor original e sensível em texto claro que será ocultado pela API.
         /// </summary>
-        public string RawValue { get; set; }
+        public required string RawValue { get; set; }
     }
 }
