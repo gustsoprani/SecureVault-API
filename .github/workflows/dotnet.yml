@@ -1,0 +1,29 @@
+name: .NET CI Pipeline
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Baixar o código do repositório
+      uses: actions/checkout@v4
+
+    - name: Instalar o .NET 8 no servidor
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 8.0.x
+
+    - name: Restaurar pacotes NuGet
+      run: dotnet restore
+
+    - name: Compilar o código
+      run: dotnet build --no-restore
+
+    - name: Rodar a bateria de testes xUnit
+      run: dotnet test --no-build --verbosity normal

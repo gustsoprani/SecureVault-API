@@ -5,13 +5,14 @@
 ![.NET](https://img.shields.io/badge/.NET-8.0-purple)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Ready-blue)
 ![Security](https://img.shields.io/badge/Security-AES--256-success)
-![Status](https://img.shields.io/badge/Status-Active-success)
+![Tests](https://img.shields.io/badge/Tests-xUnit_Passing-success)
+![CI/CD](https://img.shields.io/badge/CI%2FCD-GitHub_Actions-success)
 
 ## 📋 Sobre o Projeto
 
 O **SecureVault** é uma prova de conceito de um cofre digital de chaves (semelhante em propósito ao AWS Secrets Manager). Ele foi projetado para evitar que aplicações tenham senhas *hardcoded* em seus códigos-fonte. Uma aplicação cliente faz uma requisição HTTP, o Vault descriptografa a senha em tempo real e a devolve com segurança.
 
-O projeto foi construído focando em **Segurança da Informação**, separação de responsabilidades (SOLID) e resiliência contra ataques automatizados.
+O projeto foi construído focando em **Segurança da Informação**, separação de responsabilidades (SOLID), resiliência contra ataques automatizados e alta cobertura de qualidade técnica.
 
 ---
 
@@ -50,7 +51,8 @@ flowchart TD
 * **ORM:** Entity Framework Core (Code-First & Migrations)
 * **Criptografia:** AES-256 Symmetrical (`System.Security.Cryptography`)
 * **Defesa Perimetral:** ASP.NET Core Rate Limiting (Fixed Window)
-* **Documentação:** Swagger / OpenAPI e XML Comments nativos
+* **Testes Unitários:** xUnit + Moq + EF Core InMemory Database
+* **CI/CD:** GitHub Actions (Pipeline automatizado)
 * **Container:** Docker & Docker Compose (Infraestrutura do Banco)
 
 ## 🛡️ Destaques de Segurança
@@ -60,6 +62,14 @@ O projeto não se limita apenas a salvar dados, mas aplica conceitos de defesa e
 1. **Criptografia Simétrica (AES-256):** Utiliza chaves de 256 bits (32 bytes) com conversão segura em *Streams* para Base64. A chave mestra não fica no código fonte, sendo injetada por variáveis de ambiente.
 2. **Defesa contra Brute Force:** Implementação nativa de Rate Limiting. Limita as tentativas de acesso por IP, barrando ataques de Enumeração ou Dicionário.
 3. **Data Transfer Objects (DTOs):** Previne ataques de *Over-Posting* ou injeção de IDs falsos ao isolar a entrada de dados da entidade real do banco.
+
+## 🧪 Qualidade e Automação (CI/CD)
+
+O sistema possui uma suíte de testes unitários focada no comportamento da camada de segurança e nas regras de apresentação:
+
+* **Padrão AAA:** Testes estruturados em *Arrange, Act, Assert*.
+* **Isolamento de Banco (Mocks):** Utilização do `Moq` para simular o Serviço de Criptografia e do `Microsoft.EntityFrameworkCore.InMemory` para testar os endpoints do Controller sem sujar o banco de dados principal.
+* **Pipeline de CI:** Configurado via **GitHub Actions**. A cada *push* ou *pull request* na branch principal, um servidor Linux (Ubuntu) é provisionado automaticamente para restaurar pacotes, compilar o código de forma estrita e executar a bateria completa do xUnit.
 
 ## ⚙️ Configuração (Environment)
 
@@ -106,9 +116,7 @@ Acesse o **Swagger** na URL informada no terminal (geralmente `http://localhost:
 
 Como prova de conceito, este projeto mapeia as seguintes evoluções de arquitetura corporativa:
 
-- [ ] **Zero Trust & Autenticação (JWT):** Implementar bloqueios com `[Authorize]` e validação de tokens JWT para impedir IDOR (Insecure Direct Object Reference) em redes internas.
-- [ ] **Testes de Unidade (xUnit + Moq):** Cobertura de testes garantindo a integridade dos métodos de encriptação e isolamento do Controller.
-- [ ] **CI/CD Pipeline:** Criação de *GitHub Actions* para compilação automatizada, linting e execução dos testes a cada *push*.
+- [ ] **Zero Trust & Autenticação (JWT):** Implementar bloqueios com `[Authorize]` e validação de tokens JWT para impedir IDOR em redes internas.
 - [ ] **Vetor de Inicialização (IV) Dinâmico:** Evoluir a lógica de criptografia para gerar IVs aleatórios (salt) salvos junto com o hash no banco, elevando a entropia do dado armazenado.
 
 ---

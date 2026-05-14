@@ -5,6 +5,8 @@ VisualStudioVersion = 17.14.36705.20
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SecureVault.Api", "SecureVault.Api\SecureVault.Api.csproj", "{4643106C-1B48-436D-87C7-0CB878379EBF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SecureVault.Tests", "SecureVault.Tests\SecureVault.Tests.csproj", "{017A46C7-C269-44AD-A617-21431F1C76A2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{4643106C-1B48-436D-87C7-0CB878379EBF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4643106C-1B48-436D-87C7-0CB878379EBF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4643106C-1B48-436D-87C7-0CB878379EBF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{017A46C7-C269-44AD-A617-21431F1C76A2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{017A46C7-C269-44AD-A617-21431F1C76A2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{017A46C7-C269-44AD-A617-21431F1C76A2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{017A46C7-C269-44AD-A617-21431F1C76A2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
