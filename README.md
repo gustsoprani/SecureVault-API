@@ -3,10 +3,9 @@
 > Uma Web API robusta em .NET 8 projetada para comunicação Machine-to-Machine (M2M), oferecendo armazenamento persistente e criptografia ponta a ponta (AES-256) para credenciais sensíveis.
 
 ![.NET](https://img.shields.io/badge/.NET-8.0-purple)
-![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Ready-blue)
 ![Security](https://img.shields.io/badge/Security-AES--256-success)
-![Tests](https://img.shields.io/badge/Tests-xUnit_Passing-success)
-![CI/CD](https://img.shields.io/badge/CI%2FCD-GitHub_Actions-success)
+![Tests](https://img.shields.io/badge/Tests-Passing-success)
+![DevSecOps](https://img.shields.io/badge/DevSecOps-SCA_Audited-blue)
 
 ## 📋 Sobre o Projeto
 
@@ -22,7 +21,7 @@ A aplicação utiliza o padrão N-Tier com injeção de dependência e garante q
 
 ```mermaid
 flowchart TD
-    Client([Aplicação Cliente]) -->|HTTP Request| RL{Rate Limiter}
+    Client([Aplicação Cliente]) -->|HTTP Request| RL{Rate Limiter por IP}
     
     RL -- "Bloqueado (>3 req/10s)" --> E429[Erro 429: Too Many Requests]
     RL -- "Permitido" --> C_POST["POST: /api/secrets"]
@@ -34,7 +33,7 @@ flowchart TD
     end
 
     subgraph Service [Camada de Seguranca AES-256]
-        DTO --> ENC[Encrypt: Gera Base64]
+        DTO --> ENC[Encrypt: IV Dinâmico + Base64]
         C_GET --> DEC[Decrypt: Restaura Texto Claro]
     end
 
@@ -50,26 +49,26 @@ flowchart TD
 * **Banco de Dados:** PostgreSQL (Relacional e Escalável)
 * **ORM:** Entity Framework Core (Code-First & Migrations)
 * **Criptografia:** AES-256 Symmetrical (`System.Security.Cryptography`)
-* **Defesa Perimetral:** ASP.NET Core Rate Limiting (Fixed Window)
+* **Defesa Perimetral:** ASP.NET Core Partitioned Rate Limiting (Por IP)
 * **Testes Unitários:** xUnit + Moq + EF Core InMemory Database
-* **CI/CD:** GitHub Actions (Pipeline automatizado)
+* **CI/CD & DevSecOps:** GitHub Actions com Auditoria de Vulnerabilidades
 * **Container:** Docker & Docker Compose (Infraestrutura do Banco)
 
 ## 🛡️ Destaques de Segurança
 
 O projeto não se limita apenas a salvar dados, mas aplica conceitos de defesa em profundidade:
 
-1. **Criptografia Simétrica (AES-256):** Utiliza chaves de 256 bits (32 bytes) com conversão segura em *Streams* para Base64. A chave mestra não fica no código fonte, sendo injetada por variáveis de ambiente.
-2. **Defesa contra Brute Force:** Implementação nativa de Rate Limiting. Limita as tentativas de acesso por IP, barrando ataques de Enumeração ou Dicionário.
-3. **Data Transfer Objects (DTOs):** Previne ataques de *Over-Posting* ou injeção de IDs falsos ao isolar a entrada de dados da entidade real do banco.
+1. **Criptografia Simétrica com IV Dinâmico (AES-256):** Utiliza chaves de 256 bits acopladas a um Vetor de Inicialização (IV) gerado aleatoriamente a cada requisição. Isso eleva a entropia e previne ataques de análise de frequência direto no banco de dados.
+2. **Defesa contra Brute Force (Fail-Fast):** Implementação nativa de *Partitioned Rate Limiting*. Limita rigorosamente as tentativas de acesso por IP individual, barrando ataques de Enumeração/IDOR sem causar Negação de Serviço (DoS) para usuários legítimos.
+3. **Contratos Estritos (DTOs):** Uso de Data Transfer Objects para requisições e respostas, prevenindo ataques de *Over-Posting* e garantindo contratos de API limpos e previsíveis.
 
 ## 🧪 Qualidade e Automação (CI/CD)
 
-O sistema possui uma suíte de testes unitários focada no comportamento da camada de segurança e nas regras de apresentação:
+O sistema possui uma esteira contínua focada em validação estrutural e segurança:
 
-* **Padrão AAA:** Testes estruturados em *Arrange, Act, Assert*.
-* **Isolamento de Banco (Mocks):** Utilização do `Moq` para simular o Serviço de Criptografia e do `Microsoft.EntityFrameworkCore.InMemory` para testar os endpoints do Controller sem sujar o banco de dados principal.
-* **Pipeline de CI:** Configurado via **GitHub Actions**. A cada *push* ou *pull request* na branch principal, um servidor Linux (Ubuntu) é provisionado automaticamente para restaurar pacotes, compilar o código de forma estrita e executar a bateria completa do xUnit.
+* **Padrão AAA e Isolamento (Mocks):** Utilização do `Moq` e `InMemoryDatabase` para testar os endpoints isolando completamente a camada de banco de dados.
+* **Pipeline de CI (GitHub Actions):** A cada *push* ou *pull request*, um servidor provisionado restaura dependências, compila o código sem cache e executa a bateria de testes.
+* **Auditoria SCA (Software Composition Analysis):** Verificação contínua automatizada na pipeline (`dotnet list package --vulnerable`) para impedir que bibliotecas com CVEs conhecidos cheguem à produção.
 
 ## ⚙️ Configuração (Environment)
 
@@ -112,12 +111,15 @@ dotnet run
 ```
 Acesse o **Swagger** na URL informada no terminal (geralmente `http://localhost:5000/swagger`) para testar os endpoints interativamente.
 
-## 🔮 Roadmap e Melhorias Futuras (V2.0+)
+## 🔮 Roadmap e Melhorias Futuras
 
 Como prova de conceito, este projeto mapeia as seguintes evoluções de arquitetura corporativa:
 
-- [ ] **Zero Trust & Autenticação (JWT):** Implementar bloqueios com `[Authorize]` e validação de tokens JWT para impedir IDOR em redes internas.
-- [ ] **Vetor de Inicialização (IV) Dinâmico:** Evoluir a lógica de criptografia para gerar IVs aleatórios (salt) salvos junto com o hash no banco, elevando a entropia do dado armazenado.
+- [x] **Testes de Unidade (xUnit + Moq):** Cobertura de testes garantindo a integridade dos métodos de encriptação e isolamento do Controller.
+- [x] **CI/CD Pipeline e DevSecOps:** Criação de *GitHub Actions* para execução automatizada da suíte de QA e auditoria de vulnerabilidades (SCA).
+- [x] **Vetor de Inicialização (IV) Dinâmico:** Evolução da lógica de criptografia para gerar IVs aleatórios salvos junto com o hash no banco.
+- [x] **Rate Limiting Particionado:** Defesa contra força bruta individualizada por IP (Fail-Fast).
+- [ ] **Zero Trust & Autenticação (JWT):** Implementar bloqueios com `[Authorize]` e validação de tokens JWT para impedir IDOR em redes corporativas internas.
 
 ---
-*Desenvolvido com foco em aprendizado e portfólio.*
+*Desenvolvido com foco em segurança da informação, arquitetura backend e cultura DevSecOps.*

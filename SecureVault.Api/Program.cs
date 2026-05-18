@@ -1,7 +1,8 @@
-using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.EntityFrameworkCore;
 using SecureVault.Api.Data;
 using SecureVault.Api.Services;
+using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,12 +12,21 @@ builder.Services.AddControllers();
 // Defesa contra ataques de força bruta e Enumeração (Rate Limiting)
 builder.Services.AddRateLimiter(options =>
 {
-    options.AddFixedWindowLimiter("BloqueioDeBruteForce", opt =>
-    {
-        opt.Window = TimeSpan.FromSeconds(10);
-        opt.PermitLimit = 3;
-        opt.QueueLimit = 0;
-    });
+    // Política chamada "BloqueioPorIP" para bloquear apenas quem está causando o problema
+    options.AddPolicy("BloqueioPorIP", context =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            // A "chave" da partição é o IP de quem está fazendo a requisição.
+            // Se o IP for nulo, usamos "desconhecido" como fallback.
+            partitionKey: context.Connection.RemoteIpAddress?.ToString() ?? "desconhecido",
+
+            // Configura as regras que já conhecemos para essa partição
+            factory: partition => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 3, // Quantas requisições?
+                Window = TimeSpan.FromSeconds(10), // Em quanto tempo?
+                QueueLimit = 0, // Passou de 3, falha na hora.
+                QueueProcessingOrder = QueueProcessingOrder.OldestFirst
+            }));
     options.RejectionStatusCode = 429;
 });
 

@@ -27,10 +27,8 @@ namespace SecureVault.Api.Services
 
             using (Aes aes = Aes.Create())
             {
+                aes.GenerateIV(); // Gera 16 bytes aleatórios dinâmicos para cada nova criptografia
                 aes.Key = key;
-                // Para este MVP, utilizamos um IV (Vetor de Inicialização) fixo de 16 bytes zerados.
-                // Em um ambiente de alta segurança em produção, este IV deveria ser aleatório e salvo junto ao banco.
-                aes.IV = new byte[16];
 
                 ICryptoTransform encryptor = aes.CreateEncryptor(aes.Key, aes.IV);
 
@@ -44,8 +42,18 @@ namespace SecureVault.Api.Services
                             swEncrypt.Write(toEncrypt);
                         } // Ao fechar este bloco, o StreamWriter garante que todos os dados foram processados no fluxo.
                     }
-                    // Retorna o resultado final de bytes transformando-o em uma string segura para transporte/banco (Base64)
-                    return Convert.ToBase64String(msEncrypt.ToArray());
+                    // 1. Pegamos a "carta" (o texto que acabou de ser criptografado)
+                    byte[] cipherBytes = msEncrypt.ToArray();
+                    // 2. Criamos o "envelope" com o tamanho exato para caber o Remetente (IV) + a Carta (Cipher)
+                    byte[] resultBytes = new byte[aes.IV.Length + cipherBytes.Length];
+                    // 3. Colamos o IV no começo do envelope (Copia do índice 0 do IV para o índice 0 do Destino)
+                    Buffer.BlockCopy(aes.IV, 0, resultBytes, 0, aes.IV.Length);
+                    // 4. Colamos a senha logo após o IV. 
+                    // Note que o Destino começa no "aes.IV.Length" para não esmagar o IV que já está lá.
+                    Buffer.BlockCopy(cipherBytes, 0, resultBytes, aes.IV.Length, cipherBytes.Length);
+
+                    // 5. Retornamos o envelope inteiro convertido para texto Base64, pronto para o banco de dados
+                    return Convert.ToBase64String(resultBytes);
                 }
             }
         }
@@ -53,19 +61,32 @@ namespace SecureVault.Api.Services
         {
             // Converte a chave mestra em bytes. O AES-256 exige uma chave de exatos 32 bytes.
             byte[] key = Encoding.UTF8.GetBytes(_secretValue);
-            // Converte o dado cifrado em bytes
-            byte[] cipherBytes = Convert.FromBase64String(toDecrypt);
+
+            // 1. Recebemos o "Envelope" inteiro do banco de dados (que contém o IV + a Senha cifrada)
+            byte[] fullCipherBytes = Convert.FromBase64String(toDecrypt);
+
             using (Aes aes = Aes.Create())
             {
                 aes.Key = key;
-                // Para este MVP, utilizamos um IV (Vetor de Inicialização) fixo de 16 bytes zerados.
-                // Em um ambiente de alta segurança em produção, este IV deveria ser aleatório e salvo junto ao banco.
-                aes.IV = new byte[16];
+
+                // 2. Preparamos dois arrays vazios para receber as fatias do envelope
+                byte[] extractedIv = new byte[16];
+                byte[] cipherTextBytes = new byte[fullCipherBytes.Length - 16];
+
+                // 3. Extraímos os 16 primeiros bytes do Envelope e jogamos no "extractedIv"
+                Buffer.BlockCopy(fullCipherBytes, 0, extractedIv, 0, extractedIv.Length);
+
+                // 4. Extraímos do byte 16 em diante do Envelope e jogamos no "cipherTextBytes"
+                // Origem, Começa no byte 16 da Origem, Destino, Começa no byte 0 do Destino, Copia a quantidade exata da carta
+                Buffer.BlockCopy(fullCipherBytes, 16, cipherTextBytes, 0, cipherTextBytes.Length);
+
+                // 5. Agora sim, alimentamos o AES com o IV que acabamos de extrair
+                aes.IV = extractedIv;
 
                 ICryptoTransform decryptor = aes.CreateDecryptor(aes.Key, aes.IV);
 
                 // Cria a linha de montagem: Memória -> Decriptografia -> Leitura
-                using (MemoryStream msDecrypt = new MemoryStream(cipherBytes))
+                using (MemoryStream msDecrypt = new MemoryStream(cipherTextBytes))
                 {
                     using (CryptoStream csDecrypt = new CryptoStream(msDecrypt, decryptor, CryptoStreamMode.Read))
                     {

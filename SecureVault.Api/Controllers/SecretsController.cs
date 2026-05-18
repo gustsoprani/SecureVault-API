@@ -15,7 +15,7 @@ namespace SecureVault.Api.Controllers
     /// </summary>
     [ApiController]
     [Route("api/[controller]")]
-    [EnableRateLimiting("BloqueioDeBruteForce")]
+    [EnableRateLimiting("BloqueioPorIP")]
     public class SecretsController : ControllerBase
     {
         // Crio as variáveis "trancadas" para guardar minhas ferramentas
@@ -39,7 +39,6 @@ namespace SecureVault.Api.Controllers
         /// <param name="request">O DTO contendo o nome e o valor a ser protegido.</param>
         /// <returns>Retorna status 200 (OK) e o ID do segredo gerado no banco.</returns>
         [HttpPost]
-        [HttpPost] // Aviso que este método responde a chamadas POST
         public async Task<IActionResult> CreateSecret([FromBody] CreateSecretRequest request)
         {
             string encryptedValue = _cryptoService.Encrypt(request.RawValue);
@@ -50,7 +49,7 @@ namespace SecureVault.Api.Controllers
             };
             _context.Secrets.Add(segredo);
             await _context.SaveChangesAsync();
-            return Ok(new { Mensagem = "Segredo salvo com sucesso!", Id = segredo.Id });
+            return Ok(new SecretResponseDto { Message = "Segredo salvo com segurança", SecretName = request.SecretName });
         }
 
         /// <summary>
