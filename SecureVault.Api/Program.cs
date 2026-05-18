@@ -1,10 +1,16 @@
-using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using SecureVault.Api.Data;
 using SecureVault.Api.Services;
 using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Configuração para o .NET confiar nos cabeçalhos de proxy
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+});
 
 // SERVIÇOS DO SISTEMA E SEGURANÇA
 builder.Services.AddControllers();
@@ -51,6 +57,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseForwardedHeaders();
 
 //O limitador de taxa deve agir antes de chegar aos Controllers
 app.UseRateLimiter();
